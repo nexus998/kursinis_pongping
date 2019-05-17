@@ -36,6 +36,7 @@ namespace PongPing
             {
                 controller.MovePlatform(up: false, speed: movementSpeed, translationObject: objectInScene);
             }
+            //controller.ClampPlatform();
         }
         private void AIMovement()
         {
@@ -52,6 +53,7 @@ namespace PongPing
                     controller.MovePlatform(up: true, movementSpeed, objectInScene);
                 }
             }
+            //controller.ClampPlatform();
         }
 
         private void FixedUpdate()
