@@ -6,11 +6,17 @@ namespace PongPing
         bool canMove = true;
         public void MovePlatform(bool up, float speed, GameObject translationObject)
         {
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(translationObject.transform.position);
             if (up)
             {
-                translationObject.transform.position = new Vector3(translationObject.transform.position.x, translationObject.transform.position.y + speed * Time.deltaTime, translationObject.transform.position.z);
+                if (screenPos.y < Screen.height - 50)
+                    translationObject.transform.position = new Vector3(translationObject.transform.position.x, translationObject.transform.position.y + speed * Time.deltaTime, translationObject.transform.position.z);
             }
-            else translationObject.transform.position = new Vector3(translationObject.transform.position.x, translationObject.transform.position.y - speed * Time.deltaTime, translationObject.transform.position.z);
+            else
+            {
+                if (screenPos.y > 50)
+                    translationObject.transform.position = new Vector3(translationObject.transform.position.x, translationObject.transform.position.y - speed * Time.deltaTime, translationObject.transform.position.z);
+            }
         }
     }
 }
