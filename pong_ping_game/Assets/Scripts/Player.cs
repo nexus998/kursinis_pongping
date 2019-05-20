@@ -4,44 +4,35 @@ using UnityEngine;
 
 namespace PongPing
 {
-    public class Player : MonoBehaviour
+    public class Player
     {
-        public static int movementSpeed = 10;
+        private const int movementSpeed = 10;
         private int score;
+        public enum playerTypes { player, pc };
+        private playerTypes playerType;
+        private float detectDistance = 5.5f;
+        private PlatformController controller = new PlatformController();
+
+        public string GetControlMode() => playerType.ToString();
         public int GetScore() => score;
         public void UpScore() { score++; }
-        public KeyCode upKey = KeyCode.W, downKey = KeyCode.S;
         public GameObject objectInScene;
-
-        public enum playerTypes { player, pc };
-        public playerTypes playerType;
-
-        [Header("AI Settings")]
-        public float detectDistance = 5.5f;
-
-        private void Awake()
+        private Controls controls;
+     
+        public void PlayerMovement()
         {
-            if (!objectInScene) objectInScene = gameObject;
-            controller = new PlatformController();
-        }
-        PlatformController controller;
-        private void PlayerMovement()
-        {
-            //controller = new PlatformController();
-            if (Input.GetKey(upKey))
+            if (controls.IfKeyHeld(controls.GetUpKey()))
             {
                 controller.MovePlatform(up: true, speed: movementSpeed, translationObject: objectInScene);
             }
-            if (Input.GetKey(downKey))
+            if (controls.IfKeyHeld(controls.GetDownKey()))
             {
                 controller.MovePlatform(up: false, speed: movementSpeed, translationObject: objectInScene);
             }
-            //controller.ClampPlatform();
         }
-        private void AIMovement()
+        public void AIMovement()
         {
             float distance = objectInScene.transform.position.x - GameObject.Find("Ball").transform.position.x;
-            Debug.Log("Distance: " + distance);
             if (distance <= detectDistance)
             {
                 if (objectInScene.transform.position.y > GameObject.Find("Ball").transform.position.y)
@@ -53,19 +44,18 @@ namespace PongPing
                     controller.MovePlatform(up: true, movementSpeed, objectInScene);
                 }
             }
-            //controller.ClampPlatform();
+        }
+        public void SwitchControlMode()
+        {
+            if (playerType == playerTypes.pc) playerType = playerTypes.player;
+            else playerType = playerTypes.pc;
         }
 
-        private void FixedUpdate()
+        public Player(GameObject objectInScene, playerTypes controlMode, Controls controlSetup)
         {
-            if (playerType == playerTypes.player)
-            {
-                PlayerMovement();
-            }
-            else
-            {
-                AIMovement();
-            }
+            this.objectInScene = objectInScene;
+            playerType = controlMode;
+            controls = controlSetup;
         }
     }
 }

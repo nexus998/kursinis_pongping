@@ -3,22 +3,35 @@ namespace PongPing
 {
     public class LevelManager : MonoBehaviour
     {
-        public int secondsPlaying = 0;
+        private int secondsPlaying = 0;
+        public int GetSecondsPlayed() => secondsPlaying;
         private bool roundEnded = true;
-        public Player[] players;
+        private Player[] players;
+        public GameObject[] playerObjects;
         private UIManager ui;
+
         private void Start()
         {
-            players = new Player[2] {GameObject.Find("Player1").GetComponent<Player>(), GameObject.Find("Player2").GetComponent<Player>()};
+            Controls controls1 = new Controls(KeyCode.W, KeyCode.S);
+            Controls controls2 = new Controls(KeyCode.UpArrow, KeyCode.DownArrow);
             ui = new UIManager();
-            InvokeRepeating("IncreaseTime", 1, 1);
-            InvokeRepeating("IncreaseBallVelocity", 5, 5);
+            players = new Player[2] { new Player(playerObjects[0], Player.playerTypes.player, controls1), new Player(playerObjects[1], Player.playerTypes.pc, controls2) };
         }
         private void Update()
         {
-            if(Input.GetKeyDown(KeyCode.Space))
+            if (roundEnded)
             {
-                StartNewRound();
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    StartNewRound();
+                    roundEnded = false;
+                }
+            }
+
+            for(int i = 0; i < 2; i++)
+            {
+                if (players[i].GetControlMode() == Player.playerTypes.player.ToString()) players[i].PlayerMovement();
+                if (players[i].GetControlMode() == Player.playerTypes.pc.ToString()) players[i].AIMovement();
             }
         }
         private void IncreaseTime()
@@ -27,7 +40,12 @@ namespace PongPing
         }
         private void StartNewRound()
         {
-            if(roundEnded)GameObject.Find("Ball").GetComponent<Rigidbody2D>().AddForce(new Vector2(-1, 1) * 350);
+            if (roundEnded)
+            {
+                GameObject.Find("Ball").GetComponent<Rigidbody2D>().AddForce(new Vector2(-1, 1) * 350);
+                InvokeRepeating("IncreaseTime", 1, 1);
+                InvokeRepeating("IncreaseBallVelocity", 5, 5);
+            }
         }
         public void EndRound(bool leftWon)
         {
@@ -44,6 +62,7 @@ namespace PongPing
             GameObject.Find("Ball").GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             GameObject.Find("Ball").transform.position = new Vector3(0, 0, 1);
             roundEnded = true;
+            CancelInvoke();
         }
 
         private void IncreaseBallVelocity()
