@@ -55,7 +55,7 @@ namespace PongPing
             for(int i = 0; i < playerObjects.Length; i++)
             {
                 if (screenPos.y <= playerObjects[i].transform.position.y + 1.5f 
-                    && screenPos.y >= playerObjects[i].transform.position.y - 1.95f 
+                    && screenPos.y >= playerObjects[i].transform.position.y - 2.1f 
                     && screenPos.x <= playerObjects[i].transform.position.x + 0.1f 
                     && screenPos.x >= playerObjects[i].transform.position.x - 0.1f)
                 {
