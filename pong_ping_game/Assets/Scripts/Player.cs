@@ -8,9 +8,9 @@ namespace PongPing
     {
         private const int movementSpeed = 10;
         private int score;
-        public enum playerTypes { player, pc };
-        private playerTypes playerType;
-        private float detectDistance = 5.5f;
+        public enum PlayerTypes { player, pc };
+        private PlayerTypes playerType;
+        private readonly float detectDistance = 6.5f;
         private PlatformController controller = new PlatformController();
 
         public string GetControlMode() => playerType.ToString();
@@ -18,6 +18,33 @@ namespace PongPing
         public void UpScore() { score++; }
         public GameObject objectInScene;
         private Controls controls;
+        private Skin currentSkin = null;
+        public Skin GetCurrentSkin() => currentSkin;
+
+        public void ChangeSkin(int skinID)
+        {
+            if (currentSkin != null)
+            {
+                if(currentSkin.GetAddonModule() != null)
+                    currentSkin.GetAddonModule().Disable(objectInScene);
+            }
+            SkinSelector selector = new SkinSelector();
+            if(SkinSelector.skins.Count >= skinID-1)
+            {
+                currentSkin = SkinSelector.skins[skinID];
+                objectInScene.transform.GetChild(0).gameObject.GetComponent<Light>().color = SkinSelector.skins[skinID].GetColor();
+                objectInScene.GetComponent<SpriteRenderer>().color = SkinSelector.skins[skinID].GetColor();
+            }
+            else
+            {
+                Debug.LogError("Skin with ID of " + skinID + " does not exist!");
+            }
+        }
+
+        public void ResetScore()
+        {
+            score = 0;
+        }
      
         public void PlayerMovement()
         {
@@ -32,7 +59,7 @@ namespace PongPing
         }
         public void AIMovement()
         {
-            float distance = objectInScene.transform.position.x - GameObject.Find("Ball").transform.position.x;
+            float distance = Mathf.Abs(objectInScene.transform.position.x - GameObject.Find("Ball").transform.position.x);
             if (distance <= detectDistance)
             {
                 if (objectInScene.transform.position.y > GameObject.Find("Ball").transform.position.y)
@@ -47,15 +74,16 @@ namespace PongPing
         }
         public void SwitchControlMode()
         {
-            if (playerType == playerTypes.pc) playerType = playerTypes.player;
-            else playerType = playerTypes.pc;
+            if (playerType == PlayerTypes.pc) playerType = PlayerTypes.player;
+            else playerType = PlayerTypes.pc;
         }
 
-        public Player(GameObject objectInScene, playerTypes controlMode, Controls controlSetup)
+        public Player(GameObject objectInScene, PlayerTypes controlMode, Controls controlSetup, int skinID = -1)
         {
             this.objectInScene = objectInScene;
             playerType = controlMode;
             controls = controlSetup;
+            if (skinID != -1) ChangeSkin(skinID);
         }
     }
 }

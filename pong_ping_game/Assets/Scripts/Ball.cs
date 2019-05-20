@@ -8,16 +8,18 @@ namespace PongPing
         public Vector2 GetVelocity() => velocity;
         private GameObject ballObject;
         private Vector3 screenPos;
+
+        private LevelManager manager = GameObject.Find("LevelManager").GetComponent<LevelManager>();
         private void SetVerticalBoundaries()
         {
             Vector3 screenPos = Camera.main.WorldToScreenPoint(ballObject.transform.position);
-            if (screenPos.y >= (Screen.height - 15))
+            if (screenPos.y >= (Screen.height - 21))
             {
                 velocity = new Vector2(velocity.x, -velocity.y);
                 EmitParticles();
 
             }
-            if (screenPos.y <= 15)
+            if (screenPos.y <= 21)
             {
                 velocity = new Vector2(velocity.x, -velocity.y);
                 EmitParticles();
@@ -28,11 +30,11 @@ namespace PongPing
             screenPos = Camera.main.WorldToScreenPoint(ballObject.transform.position);
             if (screenPos.x <= 0)
             {
-                GameObject.Find("LevelManager").GetComponent<LevelManager>().EndRound(leftWon: false);
+                manager.GetComponent<LevelManager>().EndRound(leftWon: false);
             }
             if (screenPos.x >= Screen.width)
             {
-                GameObject.Find("LevelManager").GetComponent<LevelManager>().EndRound(leftWon: true);
+                manager.GetComponent<LevelManager>().EndRound(leftWon: true);
             }
         }
         private void PlatformCollision(GameObject[] playerObjects)
