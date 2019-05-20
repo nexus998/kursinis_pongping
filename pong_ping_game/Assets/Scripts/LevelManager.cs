@@ -8,7 +8,9 @@ namespace PongPing
         private bool roundEnded = true;
         private Player[] players;
         public GameObject[] playerObjects;
+        public GameObject ballObject;
         private UIManager ui;
+        private Ball ball;
 
         private void Start()
         {
@@ -16,6 +18,7 @@ namespace PongPing
             Controls controls2 = new Controls(KeyCode.UpArrow, KeyCode.DownArrow);
             ui = new UIManager();
             players = new Player[2] { new Player(playerObjects[0], Player.playerTypes.player, controls1), new Player(playerObjects[1], Player.playerTypes.pc, controls2) };
+            ball = new Ball(ballObject, ballObject.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>());
         }
         private void Update()
         {
@@ -27,7 +30,8 @@ namespace PongPing
                     roundEnded = false;
                 }
             }
-
+            ballObject.transform.Translate(ball.GetVelocity() * Time.deltaTime);
+            ball.ManageCollisions(playerObjects);
             for(int i = 0; i < 2; i++)
             {
                 if (players[i].GetControlMode() == Player.playerTypes.player.ToString()) players[i].PlayerMovement();
@@ -42,7 +46,7 @@ namespace PongPing
         {
             if (roundEnded)
             {
-                GameObject.Find("Ball").GetComponent<Rigidbody2D>().AddForce(new Vector2(-1, 1) * 350);
+                ball.LaunchBall();
                 InvokeRepeating("IncreaseTime", 1, 1);
                 InvokeRepeating("IncreaseBallVelocity", 5, 5);
             }
@@ -59,15 +63,15 @@ namespace PongPing
                 players[1].UpScore();
                 ui.DisplayRightScore(players[1].GetScore().ToString());
             }
-            GameObject.Find("Ball").GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            GameObject.Find("Ball").transform.position = new Vector3(0, 0, 1);
+            ball.StopBall();
+            ballObject.transform.position = new Vector3(0, 0, 1);
             roundEnded = true;
             CancelInvoke();
         }
 
         private void IncreaseBallVelocity()
         {
-            GameObject.Find("Ball").GetComponent<Rigidbody2D>().velocity *= 1.1f;
+            ball.IncreaseBallVelocity(1.1f);
         }
     }
 }

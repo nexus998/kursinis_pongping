@@ -5,7 +5,9 @@ namespace PongPing
     {
         public ParticleSystem particles;
         private Vector2 velocity;
+        public Vector2 GetVelocity() => velocity;
         private GameObject ballObject;
+        private Vector3 screenPos;
         private void SetVerticalBoundaries()
         {
             Vector3 screenPos = Camera.main.WorldToScreenPoint(ballObject.transform.position);
@@ -23,7 +25,7 @@ namespace PongPing
         }
         private void SetHorizontalBoundaries()
         {
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(ballObject.transform.position);
+            screenPos = Camera.main.WorldToScreenPoint(ballObject.transform.position);
             if (screenPos.x <= 0)
             {
                 GameObject.Find("LevelManager").GetComponent<LevelManager>().EndRound(leftWon: false);
@@ -33,17 +35,28 @@ namespace PongPing
                 GameObject.Find("LevelManager").GetComponent<LevelManager>().EndRound(leftWon: true);
             }
         }
-        private void PlatformCollision()
+        private void PlatformCollision(GameObject[] playerObjects)
         {
-            velocity = new Vector2(-velocity.x, velocity.y);
-            EmitParticles();
+            screenPos = ballObject.transform.position;
+
+            for(int i = 0; i < playerObjects.Length; i++)
+            {
+                if (screenPos.y <= playerObjects[i].transform.position.y + 1.5f 
+                    && screenPos.y >= playerObjects[i].transform.position.y - 1.95f 
+                    && screenPos.x <= playerObjects[i].transform.position.x + 0.1f 
+                    && screenPos.x >= playerObjects[i].transform.position.x - 0.1f)
+                {
+                    velocity = new Vector2(-velocity.x, velocity.y);
+                    EmitParticles();
+                }
+            }
         }
 
-        public void ManageCollisions()
+        public void ManageCollisions(GameObject[] playerObjects)
         {
             SetHorizontalBoundaries();
             SetVerticalBoundaries();
-            PlatformCollision();
+            PlatformCollision(playerObjects);
         }
 
         private void EmitParticles()
@@ -51,10 +64,22 @@ namespace PongPing
             particles.Stop();
             particles.Play();
         }
-
-        public Ball(Vector2 velocity, GameObject ballObject, ParticleSystem particleSystem)
+        
+        public void LaunchBall()
         {
-            this.velocity = velocity;
+            velocity = new Vector2(-1, 1) * 10;
+        }
+        public void StopBall()
+        {
+            velocity = Vector2.zero;
+        }
+        public void IncreaseBallVelocity(float multiplier)
+        {
+            velocity *= multiplier;
+        }
+
+        public Ball(GameObject ballObject, ParticleSystem particleSystem)
+        {
             this.ballObject = ballObject;
             this.particles = particleSystem;
         }
