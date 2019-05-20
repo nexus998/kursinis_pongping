@@ -6,7 +6,13 @@ namespace PongPing
 {
     public abstract class PlatformAddon
     {
-        public abstract void Activate(GameObject objectInScene);
-        public abstract void Disable(GameObject objectInScene);
+        public virtual void Activate(GameObject objectInScene)
+        {
+            objectInScene.transform.GetChild(0).gameObject.GetComponent<Light>().intensity = 94f;
+        }
+        public virtual void Disable(GameObject objectInScene)
+        {
+            objectInScene.transform.GetChild(0).gameObject.GetComponent<Light>().intensity = 42f;
+        }
     }
 }

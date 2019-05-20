@@ -25,8 +25,19 @@ namespace PongPing
             Controls controls1 = new Controls(KeyCode.W, KeyCode.S);
             Controls controls2 = new Controls(KeyCode.UpArrow, KeyCode.DownArrow);
             ui = new UIManager();
-            players = new Player[2] { new Player(playerObjects[0], Player.PlayerTypes.player, controls1), new Player(playerObjects[1], Player.PlayerTypes.pc, controls2, 0) };
-            ball = new Ball(ballObject, ballObject.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>());
+            try
+            {
+                players = new Player[2] { new Player(playerObjects[0], Player.PlayerTypes.player, controls1), new Player(playerObjects[1], controls2, players[0]) };
+                ball = new Ball(ballObject, ballObject.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>());
+            }
+            catch (UnassignedReferenceException)
+            {
+                Debug.LogError("Either player objects or ball object was not added in the Unity inspector. Please make sure they are added.");
+            }
+            catch (System.NullReferenceException)
+            {
+                Debug.LogError("Well, something went really wrong.");
+            }
         }
         private void Update()
         {

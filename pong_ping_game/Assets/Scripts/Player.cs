@@ -40,6 +40,17 @@ namespace PongPing
                 Debug.LogError("Skin with ID of " + skinID + " does not exist!");
             }
         }
+        public void ChangeSkin(Skin skin)
+        {
+            if (currentSkin != null)
+            {
+                if (currentSkin.GetAddonModule() != null)
+                    currentSkin.GetAddonModule().Disable(objectInScene);
+            }
+            currentSkin = skin;
+            objectInScene.transform.GetChild(0).gameObject.GetComponent<Light>().color = skin.GetColor();
+            objectInScene.GetComponent<SpriteRenderer>().color = skin.GetColor();
+        }
 
         public void ResetScore()
         {
@@ -84,6 +95,14 @@ namespace PongPing
             playerType = controlMode;
             controls = controlSetup;
             if (skinID != -1) ChangeSkin(skinID);
+        }
+        public Player(GameObject objectInScene, Controls controlSetup, Player other)
+        {
+            this.objectInScene = objectInScene;
+            this.controls = controlSetup;
+            this.playerType = other.playerType;
+            if (other.GetCurrentSkin() != null) ChangeSkin(other.GetCurrentSkin());
+
         }
     }
 }
