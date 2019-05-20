@@ -5,7 +5,9 @@ namespace PongPing
 {
     public class SkinSelector
     {
+        //the STL list which contains all preset skins.
         public static List<Skin> skins = new List<Skin>();
+        //instantiates all preset skins.
         public void AddNewSkins()
         {
             skins.Add(new Skin("Common White", Color.white));

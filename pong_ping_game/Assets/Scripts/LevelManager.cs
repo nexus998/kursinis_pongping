@@ -6,20 +6,26 @@ namespace PongPing
     {
         private int secondsPlaying = 0;
         public int GetSecondsPlayed() => secondsPlaying;
+
         private bool roundEnded = true;
         private string winnerSide = "";
-        private Player[] players;
-        public GameObject[] playerObjects;
-        public GameObject ballObject;
-        private UIManager ui;
-        private Ball ball;
         public int Rounds { get; set; } = 11;
 
+        private Player[] players = new Player[2];
+        public GameObject[] playerObjects;
+
+        public GameObject ballObject;
+        private Ball ball;
+
+        private UIManager ui;
+
+        //Instantiate all skins
         private void Awake()
         {
             SkinSelector selector = new SkinSelector();
             selector.AddNewSkins();
         }
+        //Instantiate control setups, UI, players and the ball.
         private void Start()
         {
             Controls controls1 = new Controls(KeyCode.W, KeyCode.S);
@@ -27,7 +33,8 @@ namespace PongPing
             ui = new UIManager();
             try
             {
-                players = new Player[2] { new Player(playerObjects[0], Player.PlayerTypes.player, controls1), new Player(playerObjects[1], controls2, players[0]) };
+                players[0] = new Player(playerObjects[0], Player.PlayerTypes.player, controls1);
+                players[1] = new Player(playerObjects[1], controls2, players[0]);
                 ball = new Ball(ballObject, ballObject.transform.GetChild(0).gameObject.GetComponent<ParticleSystem>());
             }
             catch (UnassignedReferenceException)
@@ -38,9 +45,17 @@ namespace PongPing
             {
                 Debug.LogError("Well, something went really wrong.");
             }
+
+
+            //just lazy bug-fixing. added these so that when u first start the game all the UI will be updated.
+            ChangeSkinForLeftPlayer();
+            ChangeSkinForRightPlayer();
+            ToggleControlModeForLeftPlayer();
+            ToggleControlModeForRightPlayer();
         }
         private void Update()
         {
+            //if round has ended, space can be pressed to start a new one.
             if (roundEnded)
             {
                 if (Input.GetKeyDown(KeyCode.Space))
@@ -50,8 +65,11 @@ namespace PongPing
                     HideUI();
                 }
             }
+            //move the ball according to its velocity, which is calculated in Ball.cs
             ballObject.transform.Translate(ball.GetVelocity() * Time.deltaTime);
+            //enable collisions for the ball, which are calculated in Ball.cs
             ball.ManageCollisions(playerObjects);
+            //enable movement for the platforms, whether with keyboard or via AI. Also if current skin has an addon, activate it.
             for(int i = 0; i < 2; i++)
             {
                 if (players[i].GetControlMode() == Player.PlayerTypes.player.ToString()) players[i].PlayerMovement();
@@ -62,10 +80,12 @@ namespace PongPing
                 }
             }
         }
+        //increase played time by 1 sec.
         private void IncreaseTime()
         {
             secondsPlaying += 1;
         }
+        //launch the ball, start slowly increasing its velocity, counting time, update max rounds and current points.
         private void StartNewRound()
         {
             if (roundEnded)
@@ -74,8 +94,13 @@ namespace PongPing
                 InvokeRepeating("IncreaseTime", 1, 1);
                 InvokeRepeating("IncreaseBallVelocity", 5, 5);
                 Rounds = int.Parse(GameObject.Find("Canvas").transform.Find("ui_holder").Find("max_rounds_input").gameObject.GetComponent<InputField>().text);
+                ui.DisplayLeftScore(players[0].GetScore().ToString());
+                ui.DisplayRightScore(players[1].GetScore().ToString());
             }
         }
+        //check if round was last, if was then show initial UI, reset scores and display which side won (also show high scores).
+        //if not, determine which side won that round and add score correspondingly.
+        //also, set ball's velocity to 0 and position it back to the middle.
         public void EndRound(bool leftWon, bool finalEnd=false)
         {
             if (!finalEnd)
@@ -97,28 +122,31 @@ namespace PongPing
                 ShowUI();
                 ShowWinnerText();
                 ResetScores();
+                ui.DisplayLeftHighScore(players[0].GetHighScore().ToString());
+                ui.DisplayRightHighScore(players[1].GetHighScore().ToString());
             }
             ball.StopBall();
             ballObject.transform.position = new Vector3(0, 0, 1);
+            //allow the players to press space and begin another round.
             roundEnded = true;
+            //stop counting time and increasing velocity of the ball.
             CancelInvoke();
         }
-
+        //after match is done, reset all current scores.
         private void ResetScores()
         {
             for(int i = 0; i < players.Length; i++)
             {
                 players[i].ResetScore();
             }
-            ui.DisplayLeftScore(players[0].GetScore().ToString());
-            ui.DisplayRightScore(players[1].GetScore().ToString());
+            
         }
-
+        //increase the ball's velocity by 10%
         private void IncreaseBallVelocity()
         {
             ball.IncreaseBallVelocity(1.1f);
         }
-
+        //check if that was the last round played and determine which side won the match.
         private void CheckForWin()
         {
             for(int i = 0; i < players.Length; i++)
@@ -132,7 +160,8 @@ namespace PongPing
             }
         }
 
-
+        //unity-style methods for displaying UI elements on screen using Unity UI.
+        //also ability to change skins for each player and control modes.
         //FOR UI STUFF------------------------
         #region UnityUI
         public void ChangeSkinForLeftPlayer()
